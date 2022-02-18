@@ -1,0 +1,14 @@
+{
+  "en": {
+    "myBlocks.entry.name": "My Blocks",
+    "myBlocks.entry.description": "Description of this extension"
+  },
+  "ja": {
+    "myBlocks.entry.name": "My Blocks",
+    "myBlocks.entry.description": "拡張機能の説明"
+  },
+  "ja-Hira": {
+    "myBlocks.entry.name": "My Blocks",
+    "myBlocks.entry.description": "かくちょうきのうのせつめい"
+  }
+}

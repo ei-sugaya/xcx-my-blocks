@@ -1,0 +1,14 @@
+{
+  "en": {
+    "myBlocks.name": "My Blocks",
+    "myBlocks.doIt": "do it [SCRIPT]"
+  },
+  "ja": {
+    "myBlocks.name": "My Blocks",
+    "myBlocks.doIt": "[SCRIPT] を実行する"
+  },
+  "ja-Hira": {
+    "myBlocks.name": "My Blocks",
+    "myBlocks.doIt": "[SCRIPT] をじっこうする"
+  }
+}
