@@ -89,14 +89,40 @@ class ExtensionBlocks {
             // Replace 'formatMessage' to a formatter which is used in the runtime.
             formatMessage = runtime.formatMessage;
         }
+
+        this.runtime.on('PROJECT_STOP_ALL', () => { // 'PROJECT_STOP_ALL'：ストップボタンや実行ボタンを押したときにruntimeオブジェクトから発行されるイベント。
+            this.resetAudio();  // 'PROJECT_STOP_ALL'を受け取ってWeb Audioの初期化をする。
+        });
+        this.resetAudio();
     }
 
-    doIt (args) {
-        const func = new Function(`return (${Cast.toString(args.SCRIPT)})`);
-        const result = func.call(this);
-        console.log(result);
-        return result;
+    resetAudio () {         // Web Audioの初期化メソッド：AudioContextのリセットをする（その時に鳴っているすべての音が止まる）
+        if (this.audioCtx) {
+            this.audioCtx.close();
+        }
+        this.audioCtx = new AudioContext();
     }
+
+    playTone (args) {   // ブロックから呼び出されるメソッド。オシレータで音を鳴らす。
+        const oscillator = this.audioCtx.createOscillator();
+        oscillator.connect(this.audioCtx.destination);
+        oscillator.type = args.TYPE;
+        oscillator.frequency.value = Cast.toNumber(args.FREQ);
+        oscillator.start();
+        return new Promise(resolve => {
+            setTimeout(() => {
+                oscillator.stop();
+                resolve();      // 音が鳴り終わった後に次のブロックを実行するようにしている。
+            }, Cast.toNumber(args.DUR) * 1000);
+        });
+    }
+
+//    doIt (args) {
+//        const func = new Function(`return (${Cast.toString(args.SCRIPT)})`);
+//        const result = func.call(this);
+//        console.log(result);
+//        return result;
+//    }
 
     /**
      * @returns {object} metadata for this extension and its blocks.
@@ -111,25 +137,43 @@ class ExtensionBlocks {
             showStatusButton: false,
             blocks: [
                 {
-                    opcode: 'do-it',
-                    blockType: BlockType.REPORTER,
-                    blockAllThreads: false,
-                    text: formatMessage({
-                        id: 'myBlocks.doIt',
-                        default: 'do it [SCRIPT]',
-                        description: 'execute javascript for example'
+                    opcode: 'playTone',             // プロジェクト・ファイル内に保存される中間コードの表現。'do-it'
+                    blockType: BlockType.COMMAND,   // ブロックの種類。BlockType.COMMAND：計算を実行して結果を利用しない。BlockType.REPORTER
+                                                        // blockAllThreads: false,
+                    text: formatMessage({           // 表示する文字。
+                        id: 'myBlocks.playTone',        // 'myBlocks.doIt'
+                        default: 'play [TYPE] wave [FREQ] Hz [DUR] s',  // [引数名]：引数の指定。'do it [SCRIPT]'
+                        description: 'tone'         // 'execute javascript for example'
                     }),
-                    func: 'doIt',
-                    arguments: {
-                        SCRIPT: {
+                    func: 'playTone',               // このブロックで呼び出す関数の名前。ExtensionBlocksクラスのplayToneメソッド。 'doIt'
+                    arguments: {                    // このブロックの引数を定義。
+                        FREQ: {
+                            type: ArgumentType.NUMBER,  // 引数の種類。
+                            defaultValue: 440           // 引数の初期値。
+                        },
+                        TYPE: {
                             type: ArgumentType.STRING,
-                            defaultValue: '3 + 4'
+                            menu: 'waveTypeMenu'        // menusのwaveTypeMenuプロパティで定義したメニューがブロックの引数部分に入る。
+                        },
+                        DUR: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
                         }
+//                        SCRIPT: {
+//                            type: ArgumentType.STRING,
+//                            defaultValue: '3 + 4'
+//                        }
                     }
                 }
             ],
             menus: {
+                waveTypeMenu: {
+                    acceptReporters: false,
+                    items: ['sine', 'square', 'sawtooth', 'triangle']
+                }
             }
+//            menus: {
+//            }
         };
     }
 }
